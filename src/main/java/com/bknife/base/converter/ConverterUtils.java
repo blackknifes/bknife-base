@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.bknife.base.util.ClassUtils;
+import com.bknife.base.util.Classs;
 import com.bknife.base.util.ResolveType;
 import com.bknife.base.util.tuple.Tuple2;
 import com.bknife.base.util.tuple.Tuple3;
@@ -44,7 +44,7 @@ public class ConverterUtils {
 
         List<Tuple2<Converter<?, ?>, Class<?>>> numberConverters = new ArrayList<Tuple2<Converter<?, ?>, Class<?>>>();
         try {
-            Collection<Class<?>> classList = ClassUtils.scanClasses(
+            Collection<Class<?>> classList = Classs.scanClasses(
                     ConverterUtils.class.getPackage().getName() + ".impl",
                     Converter.class);
 

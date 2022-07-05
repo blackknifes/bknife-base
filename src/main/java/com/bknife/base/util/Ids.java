@@ -5,6 +5,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+/**
+ * 唯一id生成工具类
+ */
 public abstract class Ids {
 
     private static long getServerTime() {

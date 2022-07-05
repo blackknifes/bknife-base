@@ -7,7 +7,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class ClassUtils {
+/**
+ * 类静态工具类
+ */
+public abstract class Classs {
 
     private static void scanClasses(List<Class<?>> classList, Class<?> superClass, ClassLoader classLoader,
             String packageName) throws Exception {
@@ -32,6 +35,15 @@ public abstract class ClassUtils {
         }
     }
 
+    /**
+     * 扫描包下所有类
+     * 
+     * @param packageName
+     * @param superClass
+     * @param classLoader
+     * @return
+     * @throws Exception
+     */
     public static Collection<Class<?>> scanClasses(String packageName, Class<?> superClass, ClassLoader classLoader)
             throws Exception {
         List<Class<?>> classList = new ArrayList<Class<?>>();
