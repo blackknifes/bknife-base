@@ -1,4 +1,4 @@
-package com.bknife.base.net.impl;
+package com.bknife.base.net.todo.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -14,9 +14,9 @@ import java.util.Map;
 
 import javax.net.ssl.SSLSocketFactory;
 
-import com.bknife.base.net.HttpHeader;
-import com.bknife.base.net.HttpRequest;
-import com.bknife.base.net.HttpResponse;
+import com.bknife.base.net.todo.HttpHeader;
+import com.bknife.base.net.todo.HttpRequest;
+import com.bknife.base.net.todo.HttpResponse;
 
 //TODO: implement http
 public class HttpRequestImpl implements HttpRequest {

@@ -1,58 +1,22 @@
 package com.bknife.base.converter;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.bknife.base.util.ClassUtils;
 import com.bknife.base.util.ResolveType;
+import com.bknife.base.util.tuple.Tuple2;
+import com.bknife.base.util.tuple.Tuple3;
 
 public class ConverterUtils {
-    private static class ConverterKey {
-        private Class<?> fromClass;
-        private Class<?> toClass;
-
-        public ConverterKey(Class<?> fromClass, Class<?> toClass) {
-            this.fromClass = fromClass;
-            this.toClass = toClass;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((fromClass == null) ? 0 : fromClass.hashCode());
-            result = prime * result + ((toClass == null) ? 0 : toClass.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            ConverterKey other = (ConverterKey) obj;
-            if (fromClass == null) {
-                if (other.fromClass != null)
-                    return false;
-            } else if (!fromClass.equals(other.fromClass))
-                return false;
-            if (toClass == null) {
-                if (other.toClass != null)
-                    return false;
-            } else if (!toClass.equals(other.toClass))
-                return false;
-            return true;
-        }
-    }
 
     private static Map<Class<?>, Class<?>> wrapClassToPrimitive = new HashMap<Class<?>, Class<?>>();
     private static Map<Class<?>, Class<?>> primitiveClassToWrap = new HashMap<Class<?>, Class<?>>();
-    private static Map<ConverterKey, Converter<?, ?>> converters = new HashMap<ConverterKey, Converter<?, ?>>();
+    private static ConverterMap<Class<?>, Class<?>, Converter<?, ?>> converters = new ConverterMap<Class<?>, Class<?>, Converter<?, ?>>();
 
     static {
         init();
@@ -78,6 +42,7 @@ public class ConverterUtils {
         primitiveClassToWrap.put(float.class, Float.class);
         primitiveClassToWrap.put(double.class, Double.class);
 
+        List<Tuple2<Converter<?, ?>, Class<?>>> numberConverters = new ArrayList<Tuple2<Converter<?, ?>, Class<?>>>();
         try {
             Collection<Class<?>> classList = ClassUtils.scanClasses(
                     ConverterUtils.class.getPackage().getName() + ".impl",
@@ -91,7 +56,19 @@ public class ConverterUtils {
                         ResolveType type = ResolveType.resolve(interfaceType);
                         Class<?> fromClass = type.getGenericClass(0);
                         Class<?> toClass = type.getGenericClass(1);
-                        addConverter((Converter) clazz.newInstance(), fromClass, toClass);
+                        if (toClass.isAssignableFrom(fromClass))
+                            continue;
+                        Converter converter = (Converter) clazz.newInstance();
+                        converters.put(fromClass, toClass, converter);
+                        if (Number.class == fromClass) {
+                            addConverter(converter, Byte.class, toClass);
+                            addConverter(converter, Short.class, toClass);
+                            addConverter(converter, Integer.class, toClass);
+                            addConverter(converter, Long.class, toClass);
+                            addConverter(converter, Float.class, toClass);
+                            addConverter(converter, Double.class, toClass);
+                            numberConverters.add(new Tuple2(converter, toClass));
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -99,6 +76,24 @@ public class ConverterUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        for (Tuple3<Class<?>, Class<?>, Converter<?, ?>> entry : converters.entries()) {
+            Class<?> fromClass = entry.getValue1();
+            Class<?> toClass = entry.getValue2();
+            Converter<?, ?> converter = entry.getValue3();
+            addConverterNotExists(converter, fromClass, toClass.getSuperclass());
+            for (Class<?> toInterface : toClass.getInterfaces())
+                addConverterNotExists(converter, fromClass, toInterface);
+
+            if (Number.class == toClass) {
+                for (Tuple2<Converter<?, ?>, Class<?>> numberEntry : numberConverters) {
+                    if (converters.containsKey(fromClass, numberEntry.getValue2()))
+                        continue;
+                    converters.put(fromClass, numberEntry.getValue2(),
+                            converter.andThen((Converter) numberEntry.getValue1()));
+                }
+            }
         }
     }
 
@@ -113,50 +108,35 @@ public class ConverterUtils {
      */
     @SuppressWarnings("all")
     public static <FROM, TO> Converter<FROM, TO> getConverter(Class<FROM> fromClass, Class<TO> toClass) {
-        return (Converter<FROM, TO>) getConverter(fromClass, toClass, true);
+        return (Converter<FROM, TO>) converters.get(fromClass, toClass);
     }
 
-    @SuppressWarnings("all")
-    private static Converter<?, ?> getConverter(Class<?> fromClass, Class<?> toClass, boolean searchNumberProxy) {
-        // 查询直接转换器
-        Converter<?, ?> convert = converters.get(new ConverterKey(fromClass, toClass));
-        if (convert != null)
-            return convert;
-
-        // 递归查询from父类转换器
-        Class<?> findClass = fromClass;
-        while ((findClass = findClass.getSuperclass()) != null) {
-            convert = converters.get(new ConverterKey(findClass, toClass));
-            if (convert != null)
-                return convert;
-        }
-
-        // 递归查询接口转换器
-        for (Class<?> interfaceClass : fromClass.getInterfaces()) {
-            convert = getConverter(interfaceClass, toClass);
-            if (convert != null)
-                return convert;
-        }
-
-        if (!searchNumberProxy)
-            return null;
-
-        // 查询以Number为中介的转换器
-        Converter<?, ?> toNumberConverter = getConverter(fromClass, Number.class, false);
-        if (toNumberConverter == null)
-            return null;
-        Converter<?, ?> fromNumberConverter = getConverter(Number.class, toClass, false);
-        if (fromNumberConverter == null)
-            return null;
-
-        return new ConverterNumberProxy(toNumberConverter, fromNumberConverter);
-    }
-
+    /**
+     * 覆盖本类转换，并递归添加所有不存在的父类转换以及接口转换器
+     * 
+     * @param <FROM>
+     * @param <TO>
+     * @param converter
+     * @param fromClass
+     * @param toClass
+     */
     public static <FROM, TO> void addConverter(
             Converter<FROM, TO> converter,
             Class<FROM> fromClass,
             Class<TO> toClass) {
-        converters.put(new ConverterKey(fromClass, toClass), converter);
+        converters.put(fromClass, toClass, converter);
+        addConverterNotExists(converter, fromClass, toClass.getSuperclass());
+        for (Class<?> toInterface : toClass.getInterfaces())
+            addConverterNotExists(converter, fromClass, toInterface);
+    }
+
+    private static void addConverterNotExists(Converter<?, ?> converter, Class<?> fromClass, Class<?> toClass) {
+        if (fromClass == null || toClass == null || converters.containsKey(fromClass, toClass))
+            return;
+        converters.put(fromClass, toClass, converter);
+        addConverterNotExists(converter, fromClass, toClass.getSuperclass());
+        for (Class<?> toInterface : toClass.getInterfaces())
+            addConverterNotExists(converter, fromClass, toInterface);
     }
 
     public static <FROM, TO> boolean canConvert(Class<FROM> fromClass, Class<TO> toClass) {
@@ -174,11 +154,13 @@ public class ConverterUtils {
      */
     @SuppressWarnings("unchecked")
     public static <FROM, TO> TO convert(FROM value, Class<TO> toClass) {
-        if (toClass.isAssignableFrom(value.getClass()))
-            return (TO) value;
-
+        // 转为包装类
         if (toClass.isPrimitive())
             toClass = (Class<TO>) primitiveClassToWrap.get(toClass);
+        // 可直接指定，则返回value
+        if (toClass.isAssignableFrom(value.getClass()))
+            return (TO) value;
+        // 查询转换器
         Converter<FROM, TO> converter = (Converter<FROM, TO>) getConverter(value.getClass(), toClass);
         if (converter == null)
             return null;

@@ -1,4 +1,4 @@
-package com.bknife.base.net.impl;
+package com.bknife.base.net.todo.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.bknife.base.net.HttpCookie;
-import com.bknife.base.net.HttpHeader;
-import com.bknife.base.net.HttpResponse;
+import com.bknife.base.net.todo.HttpCookie;
+import com.bknife.base.net.todo.HttpHeader;
+import com.bknife.base.net.todo.HttpResponse;
 
 public class HttpResponseImpl implements HttpResponse {
     private Collection<String> urls;

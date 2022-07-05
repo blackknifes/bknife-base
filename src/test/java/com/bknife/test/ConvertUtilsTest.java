@@ -1,6 +1,7 @@
 package com.bknife.test;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -8,8 +9,8 @@ import com.bknife.base.converter.ConverterUtils;
 
 public class ConvertUtilsTest {
     @Test
-    public void testConvertUtils()
-    {
+    public void testConvertUtils() {
+        System.out.println(UUID.randomUUID().toString().replaceAll("-", ""));
         System.out.println(ConverterUtils.convert(33.698, long.class));
         System.out.println(ConverterUtils.convert(1, long.class));
         System.out.println(ConverterUtils.convert(53, boolean.class));
