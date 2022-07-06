@@ -20,14 +20,13 @@ public class PearFlowerGenerator implements LongIdGenerator {
     private long generateTime = 0;
     private long sequence = 0;
 
-    public PearFlowerGenerator(long serverTime, int segment, int machineId)
-    {
+    public PearFlowerGenerator(long serverTime, int segment, int machineId) {
         long currentTime = System.currentTimeMillis();
-        if(segment > SEQUENCE_MASK)
+        if (segment > SEQUENCE_MASK)
             throw new IllegalArgumentException("segment is too large: " + segment + " > " + SEGMENT_MASK);
-        if(machineId > MACHINE_ID_MASK)
+        if (machineId > MACHINE_ID_MASK)
             throw new IllegalArgumentException("machine id is too large: " + machineId + " > " + MACHINE_ID_MASK);
-        if(serverTime > currentTime)
+        if (serverTime > currentTime)
             throw new IllegalArgumentException(
                     "server time cannot greater than current time: " + serverTime + " > " + currentTime);
         this.serverTime = serverTime / 1000;
@@ -38,13 +37,15 @@ public class PearFlowerGenerator implements LongIdGenerator {
 
     @Override
     public long nextId() throws Exception {
-        
+        long currentSecond = System.currentTimeMillis() / 1000;
         long timestamp;
         long sequenceValue;
-        synchronized(this)
-        {
-            if(sequence == SEQUENCE_MASK)
-            {
+        synchronized (this) {
+            //秒更新，更新时间，并更新序号为0
+            if (currentSecond > this.generateTime) {
+                this.generateTime = currentSecond;
+                sequence = 0;
+            } else if (sequence == SEQUENCE_MASK) {// 序号已满，借用下一秒时间
                 ++this.generateTime;
                 sequence = 0;
             }
