@@ -4,7 +4,7 @@
     <groupId>com.bknife</groupId>
     <artifactId>bknife-base</artifactId>
     <name>base</name>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <packaging>jar</packaging>
 
     <repositories>
@@ -15,7 +15,7 @@
     </repositories>
 
     <parent>
-        <groupId>com.bknife</groupId>
+        <groupId>com.github.blackknifes</groupId>
         <artifactId>bknife-jar-parent</artifactId>
         <version>0.0.1</version>
     </parent>
