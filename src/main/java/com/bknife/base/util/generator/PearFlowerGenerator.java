@@ -41,7 +41,7 @@ public class PearFlowerGenerator implements LongIdGenerator {
         long timestamp;
         long sequenceValue;
         synchronized (this) {
-            //秒更新，更新时间，并更新序号为0
+            // 秒更新，更新时间，并更新序号为0
             if (currentSecond > this.generateTime) {
                 this.generateTime = currentSecond;
                 sequence = 0;
@@ -50,7 +50,7 @@ public class PearFlowerGenerator implements LongIdGenerator {
                 sequence = 0;
             }
             sequenceValue = ++sequence;
-            timestamp = (generateTime & TIMESTAMP_MASK) << TIMESTAMP_OFFSET;
+            timestamp = (this.generateTime & TIMESTAMP_MASK) << TIMESTAMP_OFFSET;
         }
 
         long segmentValue = segment << SEGMENT_OFFSET;
