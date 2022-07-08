@@ -10,24 +10,18 @@ public class ObjectPool<T> {
     /**
      * 生命周期接口
      */
-    public static interface LifeSpan<T> {
-        default void init(T t, Object... params) throws Exception {
+    public static interface LifeSpan {
+        default void init(Object... params) throws Exception {
         }
 
-        public void release(T t);
+        public void release();
     }
 
     private Class<T> objectClass;
     private List<T> pool = new ArrayList<T>();
-    private LifeSpan<T> lifeSpan;
 
     public ObjectPool(Class<T> objectClass) {
         this.objectClass = objectClass;
-    }
-
-    public ObjectPool(Class<T> objectClass, LifeSpan<T> lifeSpan) {
-        this.objectClass = objectClass;
-        this.lifeSpan = lifeSpan;
     }
 
     /**
@@ -72,8 +66,8 @@ public class ObjectPool<T> {
         try {
             if (object == null)
                 object = objectClass.newInstance();
-            if (this.lifeSpan != null)
-                this.lifeSpan.init(object, params);
+            if (object instanceof ObjectPool.LifeSpan)
+                ((ObjectPool.LifeSpan) object).init(params);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -87,8 +81,8 @@ public class ObjectPool<T> {
      * @param object
      */
     public void release(T object) {
-        if (this.lifeSpan != null)
-            this.lifeSpan.release(object);
+        if (object instanceof ObjectPool.LifeSpan)
+            ((ObjectPool.LifeSpan) object).release();
         synchronized (pool) {
             pool.add(object);
         }
