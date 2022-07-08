@@ -1,6 +1,8 @@
 package com.bknife.base;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -76,6 +78,78 @@ public class ObjectPool<T> {
     }
 
     /**
+     * 从对象池中获取多组对象
+     * 
+     * @param params
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public T[] get(Collection<Object[]> params) {
+        T[] objects = (T[]) Array.newInstance(objectClass, params.size());
+        int index = 0;
+        synchronized (pool) {
+            int lastIndex = pool.size() - 1;
+            for (; index < params.size(); index++) {
+                if (pool.isEmpty())
+                    break;
+                objects[index] = pool.get(lastIndex);
+                pool.remove(lastIndex);
+                --lastIndex;
+            }
+        }
+        try {
+            for (int i = index; i < objects.length; i++)
+                objects[i] = objectClass.newInstance();
+
+            if (LifeSpan.class.isAssignableFrom(objectClass)) {
+                index = 0;
+                for (Object[] row : params)
+                    ((LifeSpan) objects[index++]).init(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return objects;
+    }
+
+    /**
+     * 从对象池中获取多组对象
+     * 
+     * @param params
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public T[] get(Object[][] params) {
+        T[] objects = (T[]) Array.newInstance(objectClass, params.length);
+        int index = 0;
+        synchronized (pool) {
+            int lastIndex = pool.size() - 1;
+            for (; index < params.length; index++) {
+                if (pool.isEmpty())
+                    break;
+                objects[index] = pool.get(lastIndex);
+                pool.remove(lastIndex);
+                --lastIndex;
+            }
+        }
+        try {
+            for (int i = index; i < objects.length; i++)
+                objects[i] = objectClass.newInstance();
+
+            if (LifeSpan.class.isAssignableFrom(objectClass)) {
+                index = 0;
+                for (Object[] row : params)
+                    ((LifeSpan) objects[index++]).init(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return objects;
+    }
+
+    /**
      * 回收对象到对象池
      * 
      * @param object
@@ -85,6 +159,39 @@ public class ObjectPool<T> {
             ((ObjectPool.LifeSpan) object).release();
         synchronized (pool) {
             pool.add(object);
+        }
+    }
+
+    /**
+     * 批量回收容器内所有对象
+     * 
+     * @param objects
+     */
+    public void release(Collection<T> objects) {
+        if (ObjectPool.LifeSpan.class.isAssignableFrom(objectClass)) {
+            for (T object : objects)
+                ((ObjectPool.LifeSpan) object).release();
+        }
+
+        synchronized (pool) {
+            pool.addAll(objects);
+        }
+    }
+
+    /**
+     * 批量回收数组内所有对象
+     * 
+     * @param objects
+     */
+    public void release(T[] objects) {
+        if (ObjectPool.LifeSpan.class.isAssignableFrom(objectClass)) {
+            for (T object : objects)
+                ((ObjectPool.LifeSpan) object).release();
+        }
+
+        synchronized (pool) {
+            for (T object : objects)
+                pool.add(object);
         }
     }
 }
