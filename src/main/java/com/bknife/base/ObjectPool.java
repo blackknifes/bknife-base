@@ -11,7 +11,8 @@ public class ObjectPool<T> {
      * 生命周期接口
      */
     public static interface LifeSpan<T> {
-        public void init(T t) throws Exception;
+        default void init(T t, Object... params) throws Exception {
+        }
 
         public void release(T t);
     }
@@ -59,7 +60,7 @@ public class ObjectPool<T> {
      * 
      * @return
      */
-    public T get() {
+    public T get(Object... params) {
         T object = null;
         synchronized (pool) {
             if (!pool.isEmpty()) {
@@ -72,7 +73,7 @@ public class ObjectPool<T> {
             if (object == null)
                 object = objectClass.newInstance();
             if (this.lifeSpan != null)
-                this.lifeSpan.init(object);
+                this.lifeSpan.init(object, params);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
