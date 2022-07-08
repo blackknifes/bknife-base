@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bknife</groupId>
     <artifactId>bknife-base</artifactId>
-    <name>base</name>
-    <version>0.0.6</version>
+    <name>bknife-base</name>
+    <version>0.0.7</version>
     <packaging>jar</packaging>
 
     <repositories>
