@@ -1,7 +1,16 @@
 package com.bknife.base.util;
 
+import java.util.Collection;
+import java.util.Map;
+
 public class Validates {
 
+    /**
+     * 验证字符串是否为空或空白字符
+     * 
+     * @param str
+     * @return
+     */
     public static boolean isEmptyBlank(String str) {
         if (str == null)
             return true;
@@ -12,18 +21,68 @@ public class Validates {
         return true;
     }
 
-    public static boolean isNotEmptyBlank(String str)
-    {
+    /**
+     * 验证字符串不为空白字符
+     * 
+     * @param str
+     * @return
+     */
+    public static boolean isNotEmptyBlank(String str) {
         return !isEmptyBlank(str);
     }
 
-    public static boolean isRangeOfSize(String str, int min, int max)
-    {
+    /**
+     * 验证字符串长度范围
+     * 
+     * @param str
+     * @param min
+     * @param max
+     * @return
+     */
+    public static boolean isRangeOfSize(String str, int min, int max) {
         return str.length() >= min && str.length() <= max;
     }
 
-    public static boolean isNotRangeOfSize(String str, int min, int max)
-    {
+    /**
+     * 验证不符合字符串长度范围的条件
+     * 
+     * @param str
+     * @param min
+     * @param max
+     * @return
+     */
+    public static boolean isNotRangeOfSize(String str, int min, int max) {
         return !isRangeOfSize(str, min, max);
+    }
+
+    /**
+     * 验证容器是否为空
+     * 
+     * @param collection
+     * @return
+     */
+    public static boolean isEmpty(Collection<?> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
+    /**
+     * 验证容器是否为空
+     * 
+     * @param map
+     * @return
+     */
+    public static boolean isEmpty(Map<?, ?> map) {
+        return map == null || map.isEmpty();
+    }
+
+    /**
+     * 验证数组是否为空
+     * 
+     * @param <T>
+     * @param arr
+     * @return
+     */
+    public static <T> boolean isEmpty(T[] arr) {
+        return arr == null || arr.length == 0;
     }
 }
