@@ -76,6 +76,16 @@ public class Validates {
     }
 
     /**
+     * 验证容器不为空
+     * 
+     * @param map
+     * @return
+     */
+    public static boolean isNotEmpty(Map<?, ?> map) {
+        return !isEmpty(map);
+    }
+
+    /**
      * 验证数组是否为空
      * 
      * @param <T>
@@ -84,5 +94,16 @@ public class Validates {
      */
     public static <T> boolean isEmpty(T[] arr) {
         return arr == null || arr.length == 0;
+    }
+
+    /**
+     * 验证数组不为空
+     * 
+     * @param <T>
+     * @param arr
+     * @return
+     */
+    public static <T> boolean isNotEmpty(T[] arr) {
+        return !isEmpty(arr);
     }
 }
