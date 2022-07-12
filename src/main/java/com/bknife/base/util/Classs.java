@@ -38,6 +38,7 @@ public abstract class Classs {
 
     private static void scanClassesFromJar(List<Class<?>> classList, Class<?> superClass, JarFile jarFile,
             String packageName) throws ClassNotFoundException {
+        String startsWith = packageName + ".";
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
@@ -45,6 +46,8 @@ public abstract class Classs {
             if (entryName.endsWith(".class")) {
                 entryName = entryName.replaceAll("/", ".");
                 entryName = entryName.substring(0, entryName.length() - 6);
+                if (!entryName.startsWith(startsWith))
+                    continue;
                 try {
                     Class<?> clazz = Class.forName(entryName);
                     if (superClass == null || superClass.isAssignableFrom(clazz))

@@ -9,7 +9,7 @@ import com.bknife.base.util.Classs;
 public class ClasssTest {
     @Test
     public void testScanClass() throws Exception {
-        Collection<Class<?>> classList = Classs.scanClasses("com.alibaba.fastjson");
+        Collection<Class<?>> classList = Classs.scanClasses("com.alibaba.fastjson.serializer");
         for (Class<?> clazz : classList)
             System.out.println(clazz);
     }
