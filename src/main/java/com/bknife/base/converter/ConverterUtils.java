@@ -12,6 +12,9 @@ import com.bknife.base.util.ResolveType;
 import com.bknife.base.util.tuple.Tuple2;
 import com.bknife.base.util.tuple.Tuple3;
 
+/**
+ * 转换工具
+ */
 public class ConverterUtils {
 
     private static Map<Class<?>, Class<?>> wrapClassToPrimitive = new HashMap<Class<?>, Class<?>>();
@@ -24,6 +27,7 @@ public class ConverterUtils {
 
     @SuppressWarnings("all")
     private static void init() {
+        // 添加包装类到primitive类的映射
         wrapClassToPrimitive.put(Boolean.class, boolean.class);
         wrapClassToPrimitive.put(Byte.class, byte.class);
         wrapClassToPrimitive.put(Character.class, char.class);
@@ -33,6 +37,7 @@ public class ConverterUtils {
         wrapClassToPrimitive.put(Float.class, float.class);
         wrapClassToPrimitive.put(Double.class, double.class);
 
+        // 添加primitive类到包装类的映射
         primitiveClassToWrap.put(boolean.class, Boolean.class);
         primitiveClassToWrap.put(byte.class, Byte.class);
         primitiveClassToWrap.put(char.class, Character.class);
@@ -42,8 +47,10 @@ public class ConverterUtils {
         primitiveClassToWrap.put(float.class, Float.class);
         primitiveClassToWrap.put(double.class, Double.class);
 
+        // 所有与Number有关的转换器
         List<Tuple2<Converter<?, ?>, Class<?>>> numberConverters = new ArrayList<Tuple2<Converter<?, ?>, Class<?>>>();
         try {
+            // 扫描impl下所有转换器类
             Collection<Class<?>> classList = Classs.scanClasses(
                     ConverterUtils.class.getPackage().getName() + ".impl",
                     Converter.class);
@@ -53,14 +60,18 @@ public class ConverterUtils {
                     continue;
                 try {
                     for (Type interfaceType : clazz.getGenericInterfaces()) {
+                        // 遍历所有泛型接口
                         ResolveType type = ResolveType.resolve(interfaceType);
                         Class<?> fromClass = type.getGenericClass(0);
                         Class<?> toClass = type.getGenericClass(1);
+                        // from类型可以直接指定给to类型，跳过
                         if (toClass.isAssignableFrom(fromClass))
                             continue;
+                        // 创建转换器实例
                         Converter converter = (Converter) clazz.newInstance();
                         converters.put(fromClass, toClass, converter);
                         if (Number.class == fromClass) {
+                            // 如果from类是Number类，则创建Number类为中间类的二级转换器
                             addConverter(converter, Byte.class, toClass);
                             addConverter(converter, Short.class, toClass);
                             addConverter(converter, Integer.class, toClass);
