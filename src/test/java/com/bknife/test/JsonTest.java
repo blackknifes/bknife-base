@@ -8,17 +8,20 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.bknife.base.json.Jsons;
+import com.bknife.base.json.deserializer.JsonLexical;
+import com.bknife.base.json.deserializer.JsonParser;
+import com.bknife.base.json.deserializer.JsonStringReader;
+import com.bknife.base.json.deserializer.JsonVisitor;
+import com.bknife.base.util.Files;
 
 public class JsonTest {
 
-    private static class TT
-    {
+    private static class TT {
         public int a = 0;
         public double b = 0;
     }
-
-    @Test
-    public void testJsonToStringMap() {
+    private String buildContent()
+    {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         List<Object> collection = new ArrayList<>();
@@ -46,7 +49,62 @@ public class JsonTest {
         tt.a = 5;
         tt.b = 5.5;
         arr[5] = tt;
+        return Jsons.toString(map, Jsons.FEATURE_BEAUTIFUL);
+    }
 
-        System.out.println(Jsons.toString(map, Jsons.FEATURE_BEAUTIFUL));
+    @Test
+    public void testJsonToStringMap() {
+        System.out.println(buildContent());
+    }
+
+    public static class JsonVisitorImpl implements JsonVisitor {
+
+        @Override
+        public boolean visitObjectBegin() {
+            System.out.println("{");
+            return true;
+        }
+
+        @Override
+        public boolean visitObjectEnd() {
+            System.out.println("}");
+            return true;
+        }
+
+        @Override
+        public boolean visitArrayBegin() {
+            System.out.println("[");
+            return true;
+        }
+
+        @Override
+        public boolean visitArrayEnd() {
+            System.out.println("]");
+            return true;
+        }
+
+        @Override
+        public boolean visitKey(String key) {
+            System.out.println("key: " + key);
+            return true;
+        }
+
+        @Override
+        public boolean visitValue(Object value) {
+            if (value == null)
+                System.out.println("null");
+            else
+                System.out.println("type: " + value.getClass() + ", value: " + value);
+            return true;
+        }
+
+    }
+
+    @Test
+    public void testParse() throws Exception {
+        String content = buildContent();
+        JsonLexical lexical = new JsonLexical(new JsonStringReader(content));
+        JsonParser parser = new JsonParser(lexical, new JsonVisitorImpl());
+        parser.parse();
     }
 }

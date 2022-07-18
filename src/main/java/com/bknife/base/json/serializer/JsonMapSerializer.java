@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.bknife.base.util.TokenBuffer;
 
-class JsonMapArraySerializer implements JsonSerializer<Map<Object, Object>> {
+class JsonMapSerializer implements JsonSerializer<Map<Object, Object>> {
 
     @Override
     public void serialize(JsonSerializer<Object> root, int depth, TokenBuffer buffer, Map<Object, Object> map,

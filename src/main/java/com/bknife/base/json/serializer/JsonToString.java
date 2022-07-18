@@ -9,7 +9,7 @@ import com.bknife.base.util.TokenBuffer;
 public final class JsonToString implements JsonContants, JsonSerializer<Object> {
     private static JsonSerializer<Object> arraySerializer = new JsonArraySerializer();
     private static JsonSerializer<Collection<Object>> collectionSerializer = new JsonCollectionSerializer();
-    private static JsonSerializer<Map<Object, Object>> mapSerializer = new JsonMapArraySerializer();
+    private static JsonSerializer<Map<Object, Object>> mapSerializer = new JsonMapSerializer();
     private static JsonSerializer<Object> stringSerializer = new JsonStringSerializer();
     private static JsonSerializer<Object> valueSerializer = new JsonNumberSerializer();
     private static JsonSerializer<Object> objectSerializer = new JsonObjectSerializer();

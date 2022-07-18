@@ -43,7 +43,7 @@ class JsonObjectSerializer implements JsonSerializer<Object> {
                     buffer.comma();
                     if (feature.isBeatiful())
                         buffer.lf();
-                    empty = true;
+                    empty = false;
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
