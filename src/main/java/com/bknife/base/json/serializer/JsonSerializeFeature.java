@@ -2,7 +2,7 @@ package com.bknife.base.json.serializer;
 
 import com.bknife.base.json.JsonContants;
 
-class JsonSerializeFeature {
+public class JsonSerializeFeature {
     private boolean beatiful;
     private boolean serializeTransient;
     private boolean serializeIgnore;

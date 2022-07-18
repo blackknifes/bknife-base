@@ -1,20 +1,37 @@
 package com.bknife.base.json.serializer;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
 
 import com.bknife.base.util.TokenBuffer;
 
-public class JsonArraySerializer implements JsonSerializer<Object> {
+class JsonArraySerializer implements JsonSerializer<Object> {
 
     @Override
-    public void serilize(JsonSerializer<Object> root, TokenBuffer buffer, Object array, JsonSerializeFeature feature) {
-        buffer.openBracket();
+    public void serialize(JsonSerializer<Object> root, int depth, TokenBuffer buffer, Object array,
+            JsonSerializeFeature feature) {
+        int nextDepth = depth + 1;
+        buffer.openBracket(); // [
+        if (feature.isBeatiful())
+            buffer.lf();
+
         int len = Array.getLength(array);
-        for (int i = 0; i < len; i++)
-            root.serilize(root, buffer, Array.get(array, i), feature);
-        if (len != 0)
-            buffer.removeLast();
-        buffer.closeBracket();
+        if (len != 0) {
+            for (int i = 0; i < len; i++) {
+                if (feature.isBeatiful())
+                    buffer.space(nextDepth << 1);
+                root.serialize(root, nextDepth, buffer, Array.get(array, i), feature); // value
+                buffer.comma(); // ,
+                if (feature.isBeatiful())
+                    buffer.lf();
+            }
+            if (feature.isBeatiful())
+                buffer.deleteCharAt(buffer.length() - 2);
+            else
+                buffer.deleteLast();
+        }
+
+        if (feature.isBeatiful())
+            buffer.space(depth << 1);
+        buffer.closeBracket(); // ]
     }
 }

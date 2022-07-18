@@ -6,10 +6,11 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.bknife.base.converter.ConverterUtils;
+import com.bknife.base.converter.exception.NouFoundConverterException;
 
 public class ConvertUtilsTest {
     @Test
-    public void testConvertUtils() {
+    public void testConvertUtils() throws NouFoundConverterException {
         System.out.println(UUID.randomUUID().toString().replaceAll("-", ""));
         System.out.println(ConverterUtils.convert(33.698, long.class));
         System.out.println(ConverterUtils.convert(1, long.class));

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bknife.base.converter.exception.NouFoundConverterException;
 import com.bknife.base.util.Classs;
 import com.bknife.base.util.ResolveType;
 import com.bknife.base.util.tuple.Tuple2;
@@ -19,7 +20,7 @@ public class ConverterUtils {
 
     private static Map<Class<?>, Class<?>> wrapClassToPrimitive = new HashMap<Class<?>, Class<?>>();
     private static Map<Class<?>, Class<?>> primitiveClassToWrap = new HashMap<Class<?>, Class<?>>();
-    private static ConverterMap<Class<?>, Class<?>, Converter<?, ?>> converters = new ConverterMap<Class<?>, Class<?>, Converter<?, ?>>();
+    private static ConverterMap<Converter<?, ?>> converters = new ConverterMap<Converter<?, ?>>();
 
     static {
         init();
@@ -161,10 +162,11 @@ public class ConverterUtils {
      * @param <TO>
      * @param value
      * @param toClass
+     * @throws NouFoundConverterException
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static <FROM, TO> TO convert(FROM value, Class<TO> toClass) {
+    public static <FROM, TO> TO convert(FROM value, Class<TO> toClass) throws NouFoundConverterException {
         // 转为包装类
         if (toClass.isPrimitive())
             toClass = (Class<TO>) primitiveClassToWrap.get(toClass);
@@ -172,9 +174,13 @@ public class ConverterUtils {
         if (toClass.isAssignableFrom(value.getClass()))
             return (TO) value;
         // 查询转换器
-        Converter<FROM, TO> converter = (Converter<FROM, TO>) getConverter(value.getClass(), toClass);
+        Class<?> fromClass = value.getClass();
+        Converter<FROM, TO> converter;
+        do {
+            converter = (Converter<FROM, TO>) getConverter(fromClass, toClass);
+        } while (converter == null && (fromClass = fromClass.getSuperclass()) != null);
         if (converter == null)
-            return null;
+            throw new NouFoundConverterException("not found converter: " + value.getClass() + " to " + toClass);
         return converter.convert(value);
     }
 }

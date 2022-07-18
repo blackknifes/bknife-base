@@ -10,12 +10,19 @@ import org.junit.Test;
 import com.bknife.base.json.Jsons;
 
 public class JsonTest {
+
+    private static class TT
+    {
+        public int a = 0;
+        public double b = 0;
+    }
+
     @Test
     public void testJsonToStringMap() {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         List<Object> collection = new ArrayList<>();
-        Object[] arr = new Object[10];
+        Object[] arr = new Object[7];
         map.put("50", 50);
         map.put("50.555", 50.555);
         map.put("map2", map2);
@@ -34,7 +41,12 @@ public class JsonTest {
         arr[1] = "arr2";
         arr[2] = "arr3";
         arr[3] = 5;
+        arr[4] = "\f\t\n\r😠中文";
+        TT tt = new TT();
+        tt.a = 5;
+        tt.b = 5.5;
+        arr[5] = tt;
 
-        System.out.println(Jsons.toString(map));
+        System.out.println(Jsons.toString(map, Jsons.FEATURE_BEAUTIFUL));
     }
 }

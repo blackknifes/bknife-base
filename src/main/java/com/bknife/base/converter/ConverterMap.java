@@ -8,37 +8,37 @@ import java.util.Map;
 
 import com.bknife.base.util.tuple.Tuple3;
 
-public class ConverterMap<K1, K2, V> {
-    private Map<K1, Map<K2, V>> topMap = new HashMap<K1, Map<K2, V>>();
+public class ConverterMap<V> {
+    private Map<Class<?>, Map<Class<?>, V>> topMap = new HashMap<Class<?>, Map<Class<?>, V>>();
 
-    public V get(K1 key1, K2 key2) {
-        Map<K2, V> map = topMap.get(key1);
+    public V get(Class<?> key1, Class<?> key2) {
+        Map<Class<?>, V> map = topMap.get(key1);
         if (map == null)
             return null;
         return map.get(key2);
     }
 
-    public void put(K1 key1, K2 key2, V val) {
-        Map<K2, V> map = topMap.get(key1);
+    public void put(Class<?> key1, Class<?> key2, V val) {
+        Map<Class<?>, V> map = topMap.get(key1);
         if (map == null) {
-            map = new HashMap<K2, V>();
+            map = new HashMap<Class<?>, V>();
             topMap.put(key1, map);
         }
         map.put(key2, val);
     }
 
-    public boolean containsKey(K1 key1, K2 key2) {
-        Map<K2, V> map = topMap.get(key1);
+    public boolean containsKey(Class<?> key1, Class<?> key2) {
+        Map<Class<?>, V> map = topMap.get(key1);
         if (map == null)
             return false;
         return map.containsKey(key2);
     }
 
-    public Collection<Tuple3<K1, K2, V>> entriesByKey2(K2 key) {
-        List<Tuple3<K1, K2, V>> list = new ArrayList<Tuple3<K1, K2, V>>();
-        for (Map.Entry<K1, Map<K2, V>> entry : topMap.entrySet()) {
-            Map<K2, V> subMap = entry.getValue();
-            for (Map.Entry<K2, V> subEntry : subMap.entrySet()) {
+    public Collection<Tuple3<Class<?>, Class<?>, V>> entriesByKey2(Class<?> key) {
+        List<Tuple3<Class<?>, Class<?>, V>> list = new ArrayList<Tuple3<Class<?>, Class<?>, V>>();
+        for (Map.Entry<Class<?>, Map<Class<?>, V>> entry : topMap.entrySet()) {
+            Map<Class<?>, V> subMap = entry.getValue();
+            for (Map.Entry<Class<?>, V> subEntry : subMap.entrySet()) {
                 if (key == subEntry.getKey())
                     list.add(new Tuple3<>(entry.getKey(), subEntry.getKey(), subEntry.getValue()));
             }
@@ -46,11 +46,11 @@ public class ConverterMap<K1, K2, V> {
         return list;
     }
 
-    public Collection<Tuple3<K1, K2, V>> entries() {
-        List<Tuple3<K1, K2, V>> list = new ArrayList<Tuple3<K1, K2, V>>();
-        for (Map.Entry<K1, Map<K2, V>> entry : topMap.entrySet()) {
-            Map<K2, V> subMap = entry.getValue();
-            for (Map.Entry<K2, V> subEntry : subMap.entrySet()) {
+    public Collection<Tuple3<Class<?>, Class<?>, V>> entries() {
+        List<Tuple3<Class<?>, Class<?>, V>> list = new ArrayList<Tuple3<Class<?>, Class<?>, V>>();
+        for (Map.Entry<Class<?>, Map<Class<?>, V>> entry : topMap.entrySet()) {
+            Map<Class<?>, V> subMap = entry.getValue();
+            for (Map.Entry<Class<?>, V> subEntry : subMap.entrySet()) {
                 list.add(new Tuple3<>(entry.getKey(), subEntry.getKey(), subEntry.getValue()));
             }
         }

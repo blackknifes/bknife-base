@@ -5,11 +5,11 @@ import com.bknife.base.util.TokenBuffer;
 /**
  * json序列化器
  */
-public interface JsonSerializer<T> {
+interface JsonSerializer<T> {
     /**
      * 序列化
      * 
      * @param buffer
      */
-    public void serilize(JsonSerializer<Object> root, TokenBuffer buffer, T value, JsonSerializeFeature feature);
+    public void serialize(JsonSerializer<Object> root, int depth, TokenBuffer buffer, T value, JsonSerializeFeature feature);
 }

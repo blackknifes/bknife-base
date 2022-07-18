@@ -33,7 +33,18 @@ public final class TokenBuffer {
         return buffer.toString();
     }
 
-    public TokenBuffer removeLast() {
+    public int length()
+    {
+        return buffer.length();
+    }
+
+    public TokenBuffer deleteCharAt(int index)
+    {
+        buffer.deleteCharAt(index);
+        return this;
+    }
+
+    public TokenBuffer deleteLast() {
         buffer.deleteCharAt(buffer.length() - 1);
         return this;
     }
@@ -205,12 +216,39 @@ public final class TokenBuffer {
         return append("%");
     }
 
-    public TokenBuffer and() {
+    public TokenBuffer caret() {
+        return append("^");
+    }
+
+    public TokenBuffer bitAnd() {
         return append("&");
     }
 
-    public TokenBuffer caret() {
+    public TokenBuffer bitOr() {
+        return append("|");
+    }
+
+    public TokenBuffer bitXor() {
         return append("^");
+    }
+
+    public TokenBuffer bitNot() {
+        return append("~");
+    }
+
+    public TokenBuffer logicNot()
+    {
+        return append("!");
+    }
+    
+    public TokenBuffer logicAnd()
+    {
+        return append("&&");
+    }
+
+    public TokenBuffer logicOr()
+    {
+        return append("||");
     }
 
     public TokenBuffer title() {
