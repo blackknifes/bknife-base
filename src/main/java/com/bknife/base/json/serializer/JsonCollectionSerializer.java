@@ -14,7 +14,6 @@ class JsonCollectionSerializer implements JsonSerializer<Collection<Object>> {
         if (feature.isBeatiful())
             buffer.lf();
 
-        int i = 0;
         if (!collection.isEmpty()) {
             for (Object object : collection) {
                 if (feature.isBeatiful())

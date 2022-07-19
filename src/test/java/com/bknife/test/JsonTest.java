@@ -12,10 +12,10 @@ import com.bknife.base.json.deserializer.JsonLexical;
 import com.bknife.base.json.deserializer.JsonParser;
 import com.bknife.base.json.deserializer.JsonStringReader;
 import com.bknife.base.json.deserializer.JsonVisitor;
-import com.bknife.base.util.Files;
 
 public class JsonTest {
 
+    @SuppressWarnings("all")
     private static class TT {
         public int a = 0;
         public double b = 0;
