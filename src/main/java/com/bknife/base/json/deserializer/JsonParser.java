@@ -1,5 +1,7 @@
 package com.bknife.base.json.deserializer;
 
+import java.io.IOException;
+
 import com.bknife.base.json.deserializer.JsonToken.Type;
 import com.bknife.base.json.exception.JsonParserError;
 
@@ -12,11 +14,11 @@ public class JsonParser {
         this.visitor = visitor;
     }
 
-    public boolean parse() throws JsonParserError {
+    public boolean parse() throws JsonParserError, IOException {
         return parseValue(lexical.nextToken());
     }
 
-    public boolean parseValue(JsonToken token) throws JsonParserError {
+    public boolean parseValue(JsonToken token) throws JsonParserError, IOException {
         switch (token.getType()) {
             case ObjectOpen:
                 if (!visitor.visitObjectBegin())
@@ -47,7 +49,7 @@ public class JsonParser {
         throw new JsonParserError(token);
     }
 
-    public boolean parseObject() throws JsonParserError {
+    public boolean parseObject() throws JsonParserError, IOException {
         JsonToken token = lexical.nextToken();
 
         while (true) {
@@ -70,7 +72,7 @@ public class JsonParser {
         }
     }
 
-    public boolean parseArray() throws JsonParserError {
+    public boolean parseArray() throws JsonParserError, IOException {
         JsonToken token = lexical.nextToken();
 
         while (true) {

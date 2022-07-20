@@ -1,5 +1,10 @@
 package com.bknife.test;
 
+import java.io.StringReader;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +15,6 @@ import org.junit.Test;
 import com.bknife.base.json.Jsons;
 import com.bknife.base.json.deserializer.JsonLexical;
 import com.bknife.base.json.deserializer.JsonParser;
-import com.bknife.base.json.deserializer.JsonStringReader;
 import com.bknife.base.json.deserializer.JsonVisitor;
 
 public class JsonTest {
@@ -20,8 +24,8 @@ public class JsonTest {
         public int a = 0;
         public double b = 0;
     }
-    private String buildContent()
-    {
+
+    private String buildContent(boolean beautiful) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map2 = new HashMap<>();
         List<Object> collection = new ArrayList<>();
@@ -49,12 +53,13 @@ public class JsonTest {
         tt.a = 5;
         tt.b = 5.5;
         arr[5] = tt;
-        return Jsons.toString(map, Jsons.FEATURE_BEAUTIFUL);
+        return Jsons.toString(map, beautiful ? Jsons.FEATURE_BEAUTIFUL : 0);
     }
 
     @Test
     public void testJsonToStringMap() {
-        System.out.println(buildContent());
+        System.out.println(buildContent(true));
+        System.out.println(buildContent(false));
     }
 
     public static class JsonVisitorImpl implements JsonVisitor {
@@ -102,9 +107,32 @@ public class JsonTest {
 
     @Test
     public void testParse() throws Exception {
-        String content = buildContent();
-        JsonLexical lexical = new JsonLexical(new JsonStringReader(content));
-        JsonParser parser = new JsonParser(lexical, new JsonVisitorImpl());
-        parser.parse();
+        {
+            String content = buildContent(false);
+            JsonLexical lexical = new JsonLexical(new StringReader(content));
+            JsonParser parser = new JsonParser(lexical, new JsonVisitorImpl());
+            parser.parse();
+        }
+        {
+            String content = buildContent(true);
+            JsonLexical lexical = new JsonLexical(new StringReader(content));
+            JsonParser parser = new JsonParser(lexical, new JsonVisitorImpl());
+            parser.parse();
+        }
+    }
+
+    public class TestArray<T> {
+        T[] val;
+    }
+
+    TestArray<Integer> val;
+
+    @Test
+    public void testClass() throws Exception {
+        ParameterizedType type = (ParameterizedType) JsonTest.class.getDeclaredField("val").getGenericType();
+        Type classType = type.getRawType();
+        GenericArrayType arrType = (GenericArrayType)((Class<?>)classType).getDeclaredField("val").getGenericType();
+        TypeVariable<?> typeVariable = (TypeVariable<?>)arrType.getGenericComponentType();
+        System.out.println(typeVariable.getName());
     }
 }

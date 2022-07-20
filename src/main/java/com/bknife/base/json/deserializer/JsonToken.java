@@ -1,7 +1,5 @@
 package com.bknife.base.json.deserializer;
 
-import com.bknife.base.json.JsonReader;
-
 public class JsonToken {
     public static enum Type {
         ObjectOpen, // {
@@ -31,13 +29,6 @@ public class JsonToken {
         this.offset = offset;
     }
 
-    public JsonToken(Type type, String token, JsonReader reader) {
-        this.type = type;
-        this.token = token;
-        this.linenum = reader.linenum();
-        this.offset = reader.offset();
-    }
-
     public Type getType() {
         return type;
     }
@@ -56,6 +47,6 @@ public class JsonToken {
 
     @Override
     public String toString() {
-        return "JsonToken [linenum=" + linenum + ", offset=" + offset + ", token=\"" + token + "\", type=" + type + "]";
+        return "JsonToken [linenum=" + linenum + ", offset=" + offset + ", type=" + type + "]";
     }
 }

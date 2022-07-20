@@ -1,37 +1,70 @@
 package com.bknife.base.json.deserializer;
 
-import com.bknife.base.json.JsonReader;
+import java.io.IOException;
+import java.io.Reader;
+
 import com.bknife.base.json.deserializer.JsonToken.Type;
 import com.bknife.base.util.Chars;
 
 public class JsonLexical {
-    private JsonReader reader;
-
+    private Reader reader;
     private StringBuffer buffer = new StringBuffer();
 
-    public JsonLexical(JsonReader reader) {
+    private int linenum;
+    private int offset;
+
+    private int curCh;
+
+    public JsonLexical(Reader reader) throws IOException {
         this.reader = reader;
+        curCh = reader.read();
     }
 
-    public JsonToken nextToken() {
+    private void skipSpace() throws IOException {
+        while (Chars.isSpace((char) curCh))
+            next();
+    }
+
+    private boolean isEof() {
+        return curCh == -1;
+    }
+
+    private String takeBuffer() {
+        String str = buffer.toString();
+        buffer.delete(0, buffer.length());
+        return str;
+    }
+
+    private char next() throws IOException {
+        char ch = (char) curCh;
+        if (ch == '\n') {
+            ++linenum;
+            offset = 0;
+        } else
+            ++offset;
+        curCh = reader.read();
+        return ch;
+    }
+
+    public JsonToken nextToken() throws IOException {
         // 跳过空白字符
-        reader.skipSpace();
-        if (reader.isEof())
-            return new JsonToken(JsonToken.Type.Eof, "", reader);
-        char ch = reader.next();
+        skipSpace();
+        if (isEof())
+            return new JsonToken(JsonToken.Type.Eof, takeBuffer(), linenum, offset);
+        char ch = next();
         switch (ch) {
             case '{':
-                return new JsonToken(JsonToken.Type.ObjectOpen, Character.toString(ch), reader);
+                return new JsonToken(JsonToken.Type.ObjectOpen, takeBuffer(), linenum, offset);
             case '}':
-                return new JsonToken(JsonToken.Type.ObjectClose, Character.toString(ch), reader);
+                return new JsonToken(JsonToken.Type.ObjectClose, takeBuffer(), linenum, offset);
             case '[':
-                return new JsonToken(JsonToken.Type.ArrayOpen, Character.toString(ch), reader);
+                return new JsonToken(JsonToken.Type.ArrayOpen, takeBuffer(), linenum, offset);
             case ']':
-                return new JsonToken(JsonToken.Type.ArrayClose, Character.toString(ch), reader);
+                return new JsonToken(JsonToken.Type.ArrayClose, takeBuffer(), linenum, offset);
             case ',':
-                return new JsonToken(JsonToken.Type.Comma, Character.toString(ch), reader);
+                return new JsonToken(JsonToken.Type.Comma, takeBuffer(), linenum, offset);
             case ':':
-                return new JsonToken(JsonToken.Type.Colon, Character.toString(ch), reader);
+                return new JsonToken(JsonToken.Type.Colon, takeBuffer(), linenum, offset);
             case '"':
                 return parseString();
             case 'n':
@@ -45,92 +78,87 @@ public class JsonLexical {
                     return parseNumber(ch);
                 break;
         }
-        return new JsonToken(JsonToken.Type.Unexpect, Character.toString(ch), reader);
+        return new JsonToken(JsonToken.Type.Unexpect, takeBuffer(), linenum, offset);
     }
 
-    private JsonToken parseTrue(char ch) {
-        char nextCh;
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'r')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'u')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'e')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        return new JsonToken(Type.Boolean, "true", reader);
+    private JsonToken parseTrue(char ch) throws IOException {
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'r')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'u')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'e')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        return new JsonToken(Type.Boolean, takeBuffer(), linenum, offset);
     }
 
-    private JsonToken parseFalse(char ch) {
-        char nextCh;
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'a')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'l')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 's')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'e')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        return new JsonToken(Type.Null, "false", reader);
+    private JsonToken parseFalse(char ch) throws IOException {
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'a')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'l')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 's')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'e')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        return new JsonToken(Type.Null, takeBuffer(), linenum, offset);
     }
 
-    private JsonToken parseNull(char ch) {
-        char nextCh;
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'u')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'l')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        if (reader.isEof())
-            return new JsonToken(Type.Unexpect, "EOF", reader);
-        if ((nextCh = reader.next()) != 'l')
-            return new JsonToken(Type.Unexpect, Character.toString(nextCh), reader);
-        return new JsonToken(Type.Null, "null", reader);
+    private JsonToken parseNull(char ch) throws IOException {
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'u')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'l')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (isEof())
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        if (next() != 'l')
+            return new JsonToken(Type.Unexpect, takeBuffer(), linenum, offset);
+        return new JsonToken(Type.Null, takeBuffer(), linenum, offset);
     }
 
     // 解析字符串
-    private JsonToken parseString() {
-        while (!reader.isEof()) {
-            char ch = reader.next();
+    private JsonToken parseString() throws IOException {
+        while (!isEof()) {
+            char ch = next();
             switch (ch) {
                 case '\\': // 需要进行转义
                     if (!parseEscapeString())
-                        return new JsonToken(JsonToken.Type.Unexpect, Character.toString(ch), reader);
+                        return new JsonToken(JsonToken.Type.Unexpect, takeBuffer(), linenum, offset);
                     break;
                 case '\n':
-                    return new JsonToken(JsonToken.Type.Unexpect, Character.toString(ch), reader);
+                    return new JsonToken(JsonToken.Type.Unexpect, takeBuffer(), linenum, offset);
                 case '"':
-                    JsonToken token = new JsonToken(JsonToken.Type.String, buffer.toString(), reader);
-                    buffer.delete(0, buffer.length());
-                    return token;
+                    return new JsonToken(JsonToken.Type.String, takeBuffer(), linenum, offset);
                 default:
                     buffer.append(ch);
                     break;
             }
         }
 
-        return new JsonToken(JsonToken.Type.Unexpect, "EOF", reader);
+        return new JsonToken(JsonToken.Type.Unexpect, takeBuffer(), linenum, offset);
     }
 
-    private boolean parseEscapeString() {
-        if (reader.isEof())
+    private boolean parseEscapeString() throws IOException {
+        if (isEof())
             return false;
-        char ch = reader.next();
+        char ch = next();
         switch (ch) {
             case 't':
                 buffer.append('\t');
@@ -156,20 +184,20 @@ public class JsonLexical {
         return true;
     }
 
-    private boolean parseUnicode() {
-        if (reader.isEof())
+    private boolean parseUnicode() throws IOException {
+        if (isEof())
             return false;
         char[] hex = new char[4];
-        hex[0] = reader.next();
-        if (reader.isEof())
+        hex[0] = next();
+        if (isEof())
             return false;
-        hex[1] = reader.next();
-        if (reader.isEof())
+        hex[1] = next();
+        if (isEof())
             return false;
-        hex[2] = reader.next();
-        if (reader.isEof())
+        hex[2] = next();
+        if (isEof())
             return false;
-        hex[3] = reader.next();
+        hex[3] = next();
 
         for (int i = 0; i < hex.length; i++) {
             if (!Chars.isXDigit(hex[i]))
@@ -181,24 +209,22 @@ public class JsonLexical {
         return true;
     }
 
-    private JsonToken parseNumber(char firstCh) {
+    private JsonToken parseNumber(char firstCh) throws IOException {
         buffer.append(firstCh);
         boolean hasDot = false;
-        while (!reader.isEof()) {
-            char ch = reader.next();
+        while (!isEof()) {
+            char ch = (char) curCh;
             if (ch == '.') {
                 if (hasDot || buffer.length() == 0 || (firstCh == '-' && buffer.length() == 1))
-                    return new JsonToken(JsonToken.Type.Unexpect, ".", reader);
+                    return new JsonToken(JsonToken.Type.Unexpect, takeBuffer(), linenum, offset);
                 hasDot = true;
             } else if (!Chars.isDigit(ch)) {
-                reader.back();
                 break;
             }
             buffer.append(ch);
+            next();
         }
 
-        String str = buffer.toString();
-        buffer.delete(0, buffer.length());
-        return new JsonToken(hasDot ? JsonToken.Type.Double : JsonToken.Type.Integer, str, reader);
+        return new JsonToken(hasDot ? JsonToken.Type.Double : JsonToken.Type.Integer, takeBuffer(), linenum, offset);
     }
 }
