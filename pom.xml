@@ -4,7 +4,7 @@
     <groupId>com.bknife</groupId>
     <artifactId>bknife-base</artifactId>
     <name>bknife-base</name>
-    <version>0.0.13</version>
+    <version>0.0.14</version>
     <packaging>jar</packaging>
 
     <repositories>
@@ -17,13 +17,13 @@
     <parent>
         <groupId>com.github.blackknifes</groupId>
         <artifactId>bknife-jar-parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
 
     <dependencies>
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
             <version>${fastjson.version}</version>
         </dependency>
     </dependencies>

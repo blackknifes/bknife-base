@@ -15,21 +15,27 @@ public class ArrayResolveType implements ResolveType {
 
     @Override
     public Object newInstance(Object... args) {
-        if (args.length != 1)
+        if (args.length != 1 || args[0] == null)
             throw new IllegalArgumentException("arguments count mismatch");
-        int[] intArgs = new int[args.length];
-        for (int i = 0; i < args.length; i++) {
-            if (!(args[i] instanceof Integer))
-                throw new IllegalArgumentException(i + "th arguments is not a int value");
-            intArgs[i] = (Integer) args[i];
-        }
+        Class<?> argClass = args[0].getClass();
+        int len;
+        if (argClass == int.class || Integer.class.isAssignableFrom(argClass))
+            len = (int) args[0];
+        else
+            throw new IllegalArgumentException("arguments count mismatch");
 
-        return Array.newInstance(ResolveType.getTypeClass(type.getGenericComponentType()), intArgs);
+        Class<?> componentClass = ResolveType.getTypeClass(type.getGenericComponentType());
+        if (componentClass == null)
+            return null;
+        return Array.newInstance(componentClass, len);
     }
 
     @Override
     public Class<?> getTypeClass() {
-        return Array.class;
+        Class<?> componentClass = getGenericClass(0);
+        if (componentClass == null)
+            return null;
+        return Array.newInstance(componentClass, 0).getClass();
     }
 
     @Override
@@ -49,6 +55,36 @@ public class ArrayResolveType implements ResolveType {
         if (index > 0 || index < 0)
             throw new IndexOutOfBoundsException("index out of bounds: " + index);
         return ResolveType.getTypeClass(type.getGenericComponentType());
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ArrayResolveType other = (ArrayResolveType) obj;
+        if (type == null) {
+            if (other.type != null)
+                return false;
+        } else if (!type.equals(other.type))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ArrayResolveType [type=" + type + "]";
     }
 
 }

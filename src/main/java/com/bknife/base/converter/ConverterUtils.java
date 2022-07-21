@@ -167,6 +167,8 @@ public class ConverterUtils {
      */
     @SuppressWarnings("unchecked")
     public static <FROM, TO> TO convert(FROM value, Class<TO> toClass) throws NouFoundConverterException {
+        if (value == null)
+            return null;
         // 转为包装类
         if (toClass.isPrimitive())
             toClass = (Class<TO>) primitiveClassToWrap.get(toClass);

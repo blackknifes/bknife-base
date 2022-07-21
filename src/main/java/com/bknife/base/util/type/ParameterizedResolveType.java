@@ -14,10 +14,7 @@ public class ParameterizedResolveType implements ResolveType {
 
     @Override
     public Object newInstance(Object... args) throws Exception {
-        Class<?>[] argClass = new Class<?>[args.length];
-        for (int i = 0; i < argClass.length; i++)
-            argClass[i] = args[i].getClass();
-        Constructor<?> constructor = getTypeClass().getDeclaredConstructor(argClass);
+        Constructor<?> constructor = getTypeClass().getConstructor(ResolveType.getArgumentTypes(args));
         constructor.setAccessible(true);
         return constructor.newInstance(args);
     }
@@ -42,4 +39,33 @@ public class ParameterizedResolveType implements ResolveType {
         return ResolveType.getTypeClass(type.getActualTypeArguments()[index]);
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ParameterizedResolveType other = (ParameterizedResolveType) obj;
+        if (type == null) {
+            if (other.type != null)
+                return false;
+        } else if (!type.equals(other.type))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ParameterizedResolveType [type=" + type + "]";
+    }
 }
